@@ -182,7 +182,7 @@ class Program:
         dateSpan = soup.find("p", {"class": "notification"})
         dateSpan2 = soup.select(".content_big #wrapper_btm table span")
 
-        optionDate = ''
+        optionDate = date(1981,10,17)
         if (dateSpan != None):
             dateSpan = dateSpan.find("span")
             optionDate = dateSpan.text.replace("Normal Market has Closed.",
