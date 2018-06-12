@@ -19,7 +19,7 @@ from bs4 import BeautifulSoup
 class Program:
     def __init__(self):
         self.clearScreen()
-        print "start"
+        print ("start")
 
     def Main(self):
         sourceDirectory = "/home/aditi/Documents/May/"
@@ -40,7 +40,7 @@ class Program:
         lstFiles = self.ReadFilesInDirectory(sourceDirectory)
         for file in lstFiles:
             sourceFileName = sourceDirectory + file
-            print "reading:" + sourceFileName
+            print ("reading:" + sourceFileName)
             page = open(sourceFileName, "r")
             soup = BeautifulSoup(page, "html.parser")
             self.ReadHtmlAndWriteToDestinationFile(soup, destinationDirectory,
@@ -48,7 +48,7 @@ class Program:
 
     def ReadTodayOptionChain(self, baseUrl, destinationDirectory,
                              fileNamePrefix, outputType):
-        print "Getting data from" + baseUrl
+        print ("Getting data from" + baseUrl)
         page = requests.get(baseUrl)
         if (page.status_code == 200):
             print("page downloeded")
@@ -69,7 +69,7 @@ class Program:
         tupleResult = self.ReadTable(soup)
         desitnationFileName = destinationDirectory + fileNamePrefix + optionChainDate.strftime(
             "%d-%m") + '.' + outputType
-        print "writing:" + desitnationFileName
+        print ("writing:" + desitnationFileName)
         self.WriteFile(desitnationFileName, tupleResult[0], tupleResult[1],
                        outputType)
 
@@ -115,7 +115,7 @@ class Program:
                 cells = cells[1:len(cells) - 1]
                 j = 0
                 for cell in cells:
-                    cellText = cell.text.strip("\r\n\t-").replace(',', '')
+                    cellText = cell.text.strip("\r\n\t-").strip(',')
                     if (cellText == ''):
                         cellText = 0
                     lstRows[i][j] = float(cellText)
@@ -180,7 +180,7 @@ class Program:
 
     def GetDate(self, soup):
         dateSpan = soup.find("p", {"class": "notification"})
-        dateSpan2 = soup.select(".content_big #wrapper_btm table span")
+        dateSpan2 = soup.select("#wrapper_btm table span")
 
         optionDate = date(1981,10,17)
         if (dateSpan != None):
