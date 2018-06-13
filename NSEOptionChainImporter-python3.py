@@ -20,41 +20,47 @@ from bs4 import BeautifulSoup
 class Program:
     def __init__(self):
         self.clearScreen()
+        self.Date = None
+        self.Symbol = None
+        self.SpotPrice = None
         print("start")
 
+    """ Main Method """
     def Main(self):
         baseUrl = "https://nseindia.com/live_market/dynaContent/live_watch/option_chain/optionKeys.jsp?instrument=OPTSTK&symbol=JINDALSTEL"
-        outputType = "json"  # "csv"
+        outputType = "csv"  # "csv"
         fileNamePrefix = "Jindal Steel Optionchain "
         sourceDirectory = ''
         destinationDirectory = ''
 
         if (name == "nt"):
-            sourceDirectory = "E:\home\Documents\May\\"
-            destinationDirectory = "E:\home\Documents\May\\"
+            sourceDirectory = "E:\\home\\Documents\\June\\"
+            destinationDirectory = "E:\\home\\Documents\\June\\"
         else:
-            sourceDirectory = "/home/aditi/Documents/May/"
-            destinationDirectory = "/home/aditi/Documents/May/"
+            sourceDirectory = os.path.expanduser('~') + "/Documents/June/"
+            destinationDirectory = os.path.expanduser('~') + "/Documents/June/"
 
-        # "https://nseindia.com/live_market/dynaContent/live_watch/option_chain/optionKeys.jsp?symbolCode=1816&symbol=JINDALSTEL&symbol=jindalstel&instrument=OPTSTK&date=-&segmentLink=17&segmentLink=17"
-        # self.ReadSavedOptionChain(sourceDirectory, destinationDirectory,
-        #                           fileNamePrefix, outputType)
-        self.ReadTodayOptionChain(baseUrl, destinationDirectory,
-                                  fileNamePrefix, outputType)
+        self.ReadSavedOptionChain(sourceDirectory, destinationDirectory,
+                                   fileNamePrefix, outputType)
+        # self.ReadTodayOptionChain(baseUrl, destinationDirectory, fileNamePrefix, outputType)
 
         print('Finished')
 
+    """  Read Saved NSE Option Chain HTML """
     def ReadSavedOptionChain(self, sourceDirectory, destinationDirectory,
                              fileNamePrefix, outputType):
         lstFiles = self.ReadFilesInDirectory(sourceDirectory)
         for file in lstFiles:
             sourceFileName = sourceDirectory + file
             print("reading:" + sourceFileName)
-            page = open(sourceFileName, "r")
+            page = open(sourceFileName, "rb")
+            page = str(page.read())
+            page = page.strip('\t')
             soup = BeautifulSoup(page, "html.parser")
+            self.PopulateData(soup)
             self.ReadHtmlAndWriteToDestinationFile(soup, destinationDirectory,
                                                    fileNamePrefix, outputType)
-
+    """ Read Todays Option chain from NSE """
     def ReadTodayOptionChain(self, baseUrl, destinationDirectory,
                              fileNamePrefix, outputType):
         print("Getting data from" + baseUrl)
@@ -63,7 +69,7 @@ class Program:
         if (httpResponce.status == 200):
             print("page downloeded")
             soup = BeautifulSoup(httpResponce.data, "html.parser")
-
+            self.PopulateData(soup)
             # self.WriteFile(filePath=
             #     destinationDirectory + "__temp_" + fileNamePrefix + ".html"
             #     ,outputType= None,html= str(soup), lstColmn =None, lstRows= None)
@@ -73,16 +79,18 @@ class Program:
         else:
             print("failed to get page")
 
+    """ Read HTML"""
     def ReadHtmlAndWriteToDestinationFile(self, soup, destinationDirectory,
                                           fileNamePrefix, outputType):
-        optionChainDate = self.GetDate(soup)
+
         tupleResult = self.ReadTable(soup)
-        desitnationFileName = destinationDirectory + fileNamePrefix + optionChainDate.strftime(
+        desitnationFileName = destinationDirectory + fileNamePrefix + self.Date.strftime(
             "%d-%m") + '.' + outputType
         print("writing:" + desitnationFileName)
         self.WriteFile(desitnationFileName, tupleResult[0], tupleResult[1],
                        outputType)
 
+    """ Read Option Chain HTML file """
     def ReadFilesInDirectory(self, rootFolder):
         lstfiles = []
         for root, dirs, files in os.walk(rootFolder):
@@ -91,35 +99,29 @@ class Program:
                     lstfiles.append(file)
         return lstfiles
 
+    """ Read Html Table """
     def ReadTable(self, soup):
         lstColmn = []
         tbl = soup.find(id="octable")
-
-        # print(datetime.date.today())
         tblHeader = tbl.find("thead")
         tblHeaderRow = tblHeader.find_all("tr")
         tblBody = tbl.find("tbody")
-        # foundTBody = False
         if (tblBody != None):
             tblBodyRow = tblBody.find_all("tr")
         else:
             tblBodyRow = tbl.find_all("tr")
-
-        # print(tblBodyRow)
-
         try:
             currentHeader = tblHeaderRow[1].find_all("th")
             currentHeader = currentHeader[1:len(currentHeader) - 1]
             colLen = len(currentHeader)
             for col in currentHeader:
                 txt = col.text
-                encodedtxt = txt.encode("utf8")
-                lstColmn.append(encodedtxt)
+                # txt = txt.encode("utf8")
+                lstColmn.append(txt)
             rowLen = len(tblBodyRow)
             startIndex = 0
-
-            lstRows = [[0 for x in range(colLen)] for y in range(rowLen)]
-            for i in range(startIndex, rowLen):
+            lstRows = [[0 for x in range(colLen)] for y in range(rowLen-1)]
+            for i in range(startIndex, rowLen-1):
                 currentRow = tblBodyRow[i]
                 cells = currentRow.find_all("td")
                 cells = cells[1:len(cells) - 1]
@@ -127,7 +129,7 @@ class Program:
                 for cell in cells:
                     cellText = 0
                     cellText = cell.text.strip(
-                        "\r\n\t-").replace(",", "").strip(" ")
+                        "\r\n\t-").replace(",", "").replace("\\n","").replace("\\t","").replace("-","").strip(" ")
                     if (cellText != ''):
                         lstRows[i][j] = float(cellText)
                     j += 1
@@ -138,8 +140,8 @@ class Program:
         tupleResult = (lstColmn, lstRows)
         return tupleResult
 
+    """ Write file  based on output/html parameter"""
     def WriteFile(self, filePath, lstColmn, lstRows, outputType, html=None):
-
         fl = open(filePath, "w")
         if ((lstColmn != None) and (lstRows != None) and (html == None)):
             if (outputType == 'csv'):
@@ -162,53 +164,51 @@ class Program:
                             else:
                                 fl.write("\n")
             elif (outputType == 'json'):
+                jsonObject = {"Symbol": self.Symbol, "Date": self.Date.strftime("%d-%m-%Y"),
+                              "SpotPrice": self.SpotPrice, "OptionChain": []}
                 jsonArray = []
-                lstColmn = self.AddPrefixToColumnUsedInJson(lstColmn)
                 for row in lstRows:
                     if(sum(row) > 0):
-                        calls = dict(zip(lstColmn["CALLS"], row[0:10]))
-                        strickprice = dict(
-                            zip(lstColmn["StrickPrice"], row[10:11]))
-                        puts = dict(zip(lstColmn["PUTS"], row[11:]))
+                        calls = dict(zip(lstColmn[0:10], row[0:10]))
+                        puts = dict(zip(lstColmn[11:], row[11:]))
 
                         customJson = dict(
-                            {"a": calls, "b": strickprice, "c": puts})
+                            {"StrickPrice": row[10],  "Calls": calls, "Puts": puts})
                         jsonArray.append(customJson)
-                json.dump(jsonArray, fl)
+                jsonObject["OptionChain"] = jsonArray
+                json.dump(jsonObject, fl)
         elif (html != None):
             fl.write(html)
         else:
             fl.write("Nothing to write")
-
         fl.close()
 
-    def AddPrefixToColumnUsedInJson(self, lstColmn):
-        lstColmn = [str(x) for x in lstColmn]
-        objDict = {
-            "CALLS": lstColmn[0:10], "StrickPrice": lstColmn[10:11], "PUTS": lstColmn[11:]}
-        return objDict
-
+    """ Clear Screen   """
     def clearScreen(self):
         if (name == "nt"):
             system("cls")
         else:
             system("clear")
 
-    def GetDate(self, soup):
+    """ Fill all data"""
+    def PopulateData(self, soup):
         dateSpan = soup.find("p", {"class": "notification"})
         dateSpan2 = soup.select(".content_big #wrapper_btm table span")
-
-        optionDate = date(1981, 10, 17)
+        _optionDate = None
         if (dateSpan != None):
             dateSpan = dateSpan.find("span")
-            optionDate = dateSpan.text.replace("Normal Market has Closed.",
-                                               "").strip()
+            _optionDate = dateSpan.text.replace("Normal Market has Closed.",
+                                                "").strip()
         else:
-            optionDate = dateSpan2[1].get_text(strip=True).replace(
+            _optionDate = dateSpan2[1].get_text(strip=True).replace(
                 "As on ", "").replace(" IST", "")
 
-        objOptDate = dateutil.parser.parse(optionDate)
-        return objOptDate
+        _datas = dateSpan2[0].find("b").text.split()
+        self.Symbol = _datas[0]
+        self.SpotPrice = _datas[1]
+
+        self.Date = dateutil.parser.parse(_optionDate)
+        return self.Date
 
 
 if __name__ == "__main__":
