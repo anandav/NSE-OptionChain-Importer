@@ -16,6 +16,11 @@
             "name": "Python3: Current File",
             "type": "python",
             "request": "launch",
+            "args": [
+                //  "-s", "JindalStel",
+                //  "--output", "json",
+                //  "-p","Jindal Steel Optionchain "
+            ],
             "program": "${file}"
         },
         {

@@ -1,3 +1,4 @@
+"""NSE Option Chain importer to CSV, JSON"""
 import argparse
 
 import json
@@ -18,37 +19,45 @@ from bs4 import BeautifulSoup
 
 
 class Program:
-    def __init__(self):
+    def __init__(self, symbol, outputType, fileNamePrefix, sourceDirectory, destinationDirectory):
         self.clearScreen()
         self.Date = None
-        self.Symbol = None
+        self.Symbol = symbol
+        self.outputType = outputType
+        self.fileNamePrefix = fileNamePrefix
+        self.sourceDirectory = sourceDirectory
+        self.destinationDirectory = destinationDirectory
         self.SpotPrice = None
         print("start")
 
     """ Main Method """
+
     def Main(self):
-        baseUrl = "https://nseindia.com/live_market/dynaContent/live_watch/option_chain/optionKeys.jsp?instrument=OPTSTK&symbol=JINDALSTEL"
-        outputType = "csv"  # "csv"
-        fileNamePrefix = "Jindal Steel Optionchain "
+        #baseUrl = "https://nseindia.com/live_market/dynaContent/live_watch/option_chain/optionKeys.jsp?instrument=OPTSTK&symbol=JINDALSTEL"
+        baseUrl = "https://nseindia.com/live_market/dynaContent/live_watch/option_chain/optionKeys.jsp?symbol="+self.Symbol
+        outputType = self.outputType
+
+        #fileNamePrefix = "Jindal Steel Optionchain "
         sourceDirectory = ''
         destinationDirectory = ''
 
         if (name == "nt"):
-            sourceDirectory = "E:\\home\\Documents\\June\\"
-            destinationDirectory = "E:\\home\\Documents\\June\\"
+            sourceDirectory = "c:\\temp\\"
+            destinationDirectory = "c:\\temp\\"
         else:
-            sourceDirectory = os.path.expanduser('~') + "/Documents/June/"
-            destinationDirectory = os.path.expanduser('~') + "/Documents/June/"
+            sourceDirectory = os.path.expanduser('~') + self.sourceDirectory
+            destinationDirectory = os.path.expanduser(
+                '~') + self.destinationDirectory
 
-        self.ReadSavedOptionChain(sourceDirectory, destinationDirectory,
-                                   fileNamePrefix, outputType)
-        # self.ReadTodayOptionChain(baseUrl, destinationDirectory, fileNamePrefix, outputType)
+        #self.ReadSavedOptionChain(sourceDirectory, destinationDirectory, outputType)
+        self.ReadTodayOptionChain(baseUrl, destinationDirectory,  outputType)
 
         print('Finished')
 
     """  Read Saved NSE Option Chain HTML """
+
     def ReadSavedOptionChain(self, sourceDirectory, destinationDirectory,
-                             fileNamePrefix, outputType):
+                             outputType):
         lstFiles = self.ReadFilesInDirectory(sourceDirectory)
         for file in lstFiles:
             sourceFileName = sourceDirectory + file
@@ -59,15 +68,17 @@ class Program:
             soup = BeautifulSoup(page, "html.parser")
             self.PopulateData(soup)
             self.ReadHtmlAndWriteToDestinationFile(soup, destinationDirectory,
-                                                   fileNamePrefix, outputType)
+                                                   outputType)
     """ Read Todays Option chain from NSE """
+
     def ReadTodayOptionChain(self, baseUrl, destinationDirectory,
-                             fileNamePrefix, outputType):
+                             outputType):
         print("Getting data from" + baseUrl)
         http = urllib3.PoolManager()
         httpResponce = http.request("GET", baseUrl)
         if (httpResponce.status == 200):
             print("page downloeded")
+
             soup = BeautifulSoup(httpResponce.data, "html.parser")
             self.PopulateData(soup)
             # self.WriteFile(filePath=
@@ -75,22 +86,24 @@ class Program:
             #     ,outputType= None,html= str(soup), lstColmn =None, lstRows= None)
 
             self.ReadHtmlAndWriteToDestinationFile(soup, destinationDirectory,
-                                                   fileNamePrefix, outputType)
+                                                   outputType)
         else:
             print("failed to get page")
 
     """ Read HTML"""
+
     def ReadHtmlAndWriteToDestinationFile(self, soup, destinationDirectory,
-                                          fileNamePrefix, outputType):
+                                          outputType):
 
         tupleResult = self.ReadTable(soup)
-        desitnationFileName = destinationDirectory + fileNamePrefix + self.Date.strftime(
+        desitnationFileName = destinationDirectory + self.fileNamePrefix + self.Date.strftime(
             "%d-%m") + '.' + outputType
         print("writing:" + desitnationFileName)
         self.WriteFile(desitnationFileName, tupleResult[0], tupleResult[1],
                        outputType)
 
     """ Read Option Chain HTML file """
+
     def ReadFilesInDirectory(self, rootFolder):
         lstfiles = []
         for root, dirs, files in os.walk(rootFolder):
@@ -100,6 +113,7 @@ class Program:
         return lstfiles
 
     """ Read Html Table """
+
     def ReadTable(self, soup):
         lstColmn = []
         tbl = soup.find(id="octable")
@@ -129,7 +143,7 @@ class Program:
                 for cell in cells:
                     cellText = 0
                     cellText = cell.text.strip(
-                        "\r\n\t-").replace(",", "").replace("\\n","").replace("\\t","").replace("-","").strip(" ")
+                        "\r\n\t-").replace(",", "").replace("\\n", "").replace("\\t", "").replace("-", "").strip(" ")
                     if (cellText != ''):
                         lstRows[i][j] = float(cellText)
                     j += 1
@@ -141,6 +155,7 @@ class Program:
         return tupleResult
 
     """ Write file  based on output/html parameter"""
+
     def WriteFile(self, filePath, lstColmn, lstRows, outputType, html=None):
         fl = open(filePath, "w")
         if ((lstColmn != None) and (lstRows != None) and (html == None)):
@@ -184,6 +199,7 @@ class Program:
         fl.close()
 
     """ Clear Screen   """
+
     def clearScreen(self):
         if (name == "nt"):
             system("cls")
@@ -191,6 +207,7 @@ class Program:
             system("clear")
 
     """ Fill all data"""
+
     def PopulateData(self, soup):
         dateSpan = soup.find("p", {"class": "notification"})
         dateSpan2 = soup.select(".content_big #wrapper_btm table span")
@@ -212,5 +229,25 @@ class Program:
 
 
 if __name__ == "__main__":
-    pro = Program()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--symbol", dest="symbol", action="store",
+                        default="jindalstel", help="NSE Symbol")
+    parser.add_argument("-o", "--output", dest="outputType",
+                        action="store", default="csv",  help="CSV or JSON format")
+    parser.add_argument("-p", "--fileNamePrefix", dest="fileNamePrefix", action="store",
+                        default="",  help="File name prefix")
+    parser.add_argument("-sd", "--sourcedirectory", dest="sd", action="store",
+                        default="/Documents/June/",  help="Source Directory path (in home dir)")
+    parser.add_argument("-dd", "--destinationdirectory", dest="dd", action="store",
+                        default="/Documents/June/",  help="Destination Directory path (in home dir)")
+
+    #parser.add_argument('-s', action='store', dest='symbol' , default="nifty", help='NSE Symbol')
+    args = parser.parse_args()
+    fnp = ''
+    if(args.fileNamePrefix == ''):
+        fnp = args.symbol
+    else:
+        fnp = args.fileNamePrefix
+    pro = Program(args.symbol, args.outputType, fnp,
+                  args.sd, args.dd)
     pro.Main()
