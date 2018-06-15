@@ -17,35 +17,13 @@
             "type": "python",
             "request": "launch",
             "args": [
-                //  "-s", "JindalStel",
-                //  "--output", "json",
-                //  "-p","Jindal Steel Optionchain "
+                "-s", "JindalStel",
+                "-f", "csv",
+                "-p","Jindal Steel Optionchain ",
+                "-sd", "/home/aditi/Documents/June/",
+                "-dd","/home/aditi/Documents/June/"
             ],
             "program": "${file}"
-        },
-        {
-            "name": "Python: Attach",
-            "type": "python",
-            "request": "attach",
-            "localRoot": "${workspaceFolder}",
-            "remoteRoot": "${workspaceFolder}",
-            "port": 3000,
-            "secret": "my_secret",
-            "host": "localhost"
-        },
-        {
-            "name": "Python: Terminal (integrated)",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Python: Terminal (external)",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "externalTerminal"
         }
     ]
 }
