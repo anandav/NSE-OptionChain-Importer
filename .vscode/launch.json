@@ -18,12 +18,13 @@
             "request": "launch",
             "args": [
                 "-s", "JindalStel",
-                "-f", "csv",
+                "-f", "both",
                 "-p","Jindal Steel Optionchain ",
                 "-sd", "/home/aditi/Documents/June/",
-                "-dd","/home/aditi/Documents/June/"
+                "-dd","/home/aditi/Documents/June/",
+                "-sah", ""
             ],
-            "program": "${file}"
+            "program": "${workspaceFolder}/Program.py"
         }
     ]
 }

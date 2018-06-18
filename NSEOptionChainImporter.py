@@ -19,7 +19,7 @@ from bs4 import BeautifulSoup
 
 
 class Program:
-    def __init__(self, symbol, outputType, fileNamePrefix, sourceDirectory, destinationDirectory, getOnlineData):
+    def __init__(self, optionchainUrl, symbol, outputType, fileNamePrefix, sourceDirectory, destinationDirectory, getOnlineData, saveAsHTML):
         self.Date = None
         self.Symbol = symbol
         self.outputType = outputType
@@ -28,15 +28,16 @@ class Program:
         self.sourceDirectory = sourceDirectory
         self.destinationDirectory = destinationDirectory
         self.SpotPrice = None
+        self.optionChainUrl = optionchainUrl
+        self.saveAsHtml = saveAsHTML
 
     """ Main Method """
 
     def Main(self):
-        # baseUrl = "https://nseindia.com/live_market/dynaContent/live_watch/option_chain/optionKeys.jsp?instrument=OPTSTK&symbol=JINDALSTEL"
-        baseUrl = "https://nseindia.com/live_market/dynaContent/live_watch/option_chain/optionKeys.jsp?symbol={0}".format(self.Symbol)
         if(self.getOnlineData):
+            self.optionChainUrl = self.optionChainUrl.format(self.Symbol)
             self.ReadTodayOptionChain(
-                baseUrl, self.destinationDirectory,  self.outputType)
+                self.optionChainUrl, self.destinationDirectory,  self.outputType)
         else:
             self.ReadSavedOptionChain(
                 self.sourceDirectory, self.destinationDirectory, self.outputType)
@@ -81,11 +82,23 @@ class Program:
                                           outputType):
 
         tupleResult = self.ReadTable(soup)
-        desitnationFileName = "{0}{1}{2}.{3}".format(destinationDirectory,self.fileNamePrefix , self.Date.strftime(
-            "%d-%m") ,outputType)
+        desitnationFileName = desitnationFileName = "{0}{1}{2}.{3}".format(
+            destinationDirectory, self.fileNamePrefix, self.Date.strftime("%d-%m"), outputType)
+        if(self.saveAsHtml):
+            desitnationHTMLFileName = desitnationFileName = "{0}{1}{2}.html".format(
+                destinationDirectory, self.fileNamePrefix, self.Date.strftime("%d-%m"))
+            self.WriteFile(desitnationHTMLFileName, html=soup.prettify(),
+                           lstColmn=None, lstRows=None, outputType=None)
 
-        self.WriteFile(desitnationFileName, tupleResult[0], tupleResult[1],
-                       outputType)
+        if(outputType == "both"):
+            for ext in ["csv", "json"]:
+                desitnationFileName = "{0}{1}{2}.{3}".format(
+                    destinationDirectory, self.fileNamePrefix, self.Date.strftime("%d-%m"), ext)
+                self.WriteFile(desitnationFileName,
+                               tupleResult[0], tupleResult[1], ext)
+        else:
+            self.WriteFile(desitnationFileName,
+                           tupleResult[0], tupleResult[1], outputType)
 
     """ Read Option Chain HTML file """
 
@@ -145,7 +158,7 @@ class Program:
         print("writing:{0}".format(filePath))
         fl = open(filePath, "w")
         if ((lstColmn != None) and (lstRows != None) and (html == None)):
-            if (outputType == 'csv'):
+            if ((outputType == "csv")):
                 for x in range(0, len(lstColmn)):
                     fl.write(lstColmn[x])
                     if (x < len(lstColmn) - 1):
@@ -164,7 +177,7 @@ class Program:
                                 fl.write(",")
                             else:
                                 fl.write("\n")
-            elif (outputType == 'json'):
+            if ((outputType == "json")):
                 jsonObject = {"Symbol": self.Symbol, "Date": self.Date.strftime("%d-%m-%Y"),
                               "SpotPrice": self.SpotPrice, "OptionChain": []}
                 jsonArray = []
@@ -204,8 +217,3 @@ class Program:
 
         self.Date = dateutil.parser.parse(_optionDate)
         return self.Date
-
-
-
-
-

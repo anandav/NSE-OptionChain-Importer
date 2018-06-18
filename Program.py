@@ -1,10 +1,12 @@
 import argparse
+import configparser
 import os
-from os import name, system 
+from os import name, system
 from NSEOptionChainImporter import Program
 
 
 """ Clear Screen   """
+
 
 def clearScreen():
     if (name == "nt"):
@@ -15,8 +17,13 @@ def clearScreen():
 
 if __name__ == "__main__":
 
-    clearScreen()
-    print("Start")
+   
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    optionchianurlformat = ''
+    if('config' in config):
+        optionchianurlformat = config["config"]["optionchianurlformat"]
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--symbol", dest="symbol", action="store",
                         default="jindalstel", help="NSE Symbol")
@@ -30,6 +37,8 @@ if __name__ == "__main__":
                         default="/Documents/June/",  help="Destination Directory path (in home dir)")
     parser.add_argument("-o", "--online", dest="onlineData", action="store_true", default=True,
                         help="Get data from NSE portal when set to 'True', else get data from the html store local using -sd")
+    parser.add_argument("-sah", "--sahtml", dest="saveAsHtml",
+                        action="store_true", default=True, help="Save HTML file")
 
     # parser.add_argument('-s', action='store', dest='symbol' , default="nifty", help='NSE Symbol')
     args = parser.parse_args()
@@ -50,6 +59,8 @@ if __name__ == "__main__":
         if(args.dd == ''):
             args.dd = os.path.expanduser('~')
 
-    pro = Program(args.symbol, args.format, fnp,
-                  args.sd, args.dd, args.onlineData)
-    pro.Main()
+    clearScreen()
+    print("Start")
+    pro = Program(optionchianurlformat, args.symbol, args.format, fnp,
+                  args.sd, args.dd, args.onlineData, args.saveAsHtml)
+    pro.Main() 
