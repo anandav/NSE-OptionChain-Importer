@@ -14,11 +14,9 @@ Used to import the data from [Option Chain](https://nseindia.com/live_market/dyn
 ```
 
 #### *ToDo:*
->*Scheduler download
->*Store date to Database
->*UI to Visivalize data using D3.js and Django for MVC
->*
-
+> * Scheduler download
+> * Store date to Database
+> * UI to Visivalize data using D3.js and Django for MVC
 
 
 
