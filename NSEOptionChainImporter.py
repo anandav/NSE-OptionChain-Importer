@@ -7,19 +7,24 @@ import pickle
 import re
 import string
 import traceback
+import sqlite3
 from datetime import date, time
 from json import JSONEncoder, dump
 from os import name, system
 
+from mydatabase import databaseprovider
+
+
 import dateutil
-import pandas as pd
+import dateutil.parser
+
 import requests
 import urllib3
 from bs4 import BeautifulSoup
 
 
 class Program:
-    def __init__(self, optionchainUrl, symbol, outputType, fileNamePrefix, sourceDirectory, destinationDirectory, getOnlineData, saveAsHTML):
+    def __init__(self, optionchainUrl, symbol, outputType, fileNamePrefix, sourceDirectory, destinationDirectory, getOnlineData, saveAsHTML, connectionString):
         self.Date = None
         self.Symbol = symbol
         self.outputType = outputType
@@ -30,6 +35,7 @@ class Program:
         self.SpotPrice = None
         self.optionChainUrl = optionchainUrl
         self.saveAsHtml = saveAsHTML
+        self.connectionString = connectionString
 
     """ Main Method """
 
@@ -87,18 +93,21 @@ class Program:
         if(self.saveAsHtml):
             desitnationHTMLFileName = desitnationFileName = "{0}{1}{2}.html".format(
                 destinationDirectory, self.fileNamePrefix, self.Date.strftime("%d-%m"))
-            self.WriteFile(desitnationHTMLFileName, html=soup.prettify(),
-                           lstColmn=None, lstRows=None, outputType=None)
+            self.WriteToFile(desitnationHTMLFileName, html=soup.prettify(),
+                             lstColmn=None, lstRows=None, outputType=None)
 
-        if(outputType == "both"):
-            for ext in ["csv", "json"]:
+        extensions = [x.strip() for x in re.split(';|,| ', outputType)]
+
+        for ext in extensions:
+            if((ext != "db" ) or(ext != "database")):
                 desitnationFileName = "{0}{1}{2}.{3}".format(
                     destinationDirectory, self.fileNamePrefix, self.Date.strftime("%d-%m"), ext)
-                self.WriteFile(desitnationFileName,
-                               tupleResult[0], tupleResult[1], ext)
-        else:
-            self.WriteFile(desitnationFileName,
-                           tupleResult[0], tupleResult[1], outputType)
+                self.WriteToFile(desitnationFileName,
+                                 tupleResult[0], tupleResult[1], ext)
+
+        if(("db" in extensions) or ("database" in extensions)):
+            self.WriteToDB(tupleResult[0], tupleResult[1])
+
 
     """ Read Option Chain HTML file """
 
@@ -154,7 +163,7 @@ class Program:
 
     """ Write file  based on output/html parameter"""
 
-    def WriteFile(self, filePath, lstColmn, lstRows, outputType, html=None):
+    def WriteToFile(self, filePath, lstColmn, lstRows, outputType, html=None):
         print("writing:{0}".format(filePath))
         fl = open(filePath, "w")
         if ((lstColmn != None) and (lstRows != None) and (html == None)):
@@ -196,6 +205,10 @@ class Program:
         else:
             fl.write("Nothing to write")
         fl.close()
+
+    def WriteToDB(self, lstColmn, lstRows):
+        dbp = databaseprovider(self.connectionString, (lstColmn, lstRows))
+        isTableCreated = dbp.CreateTable("option_chain")
 
     """ Fill all data"""
 

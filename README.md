@@ -13,6 +13,11 @@ Used to import the data from [Option Chain](https://nseindia.com/live_market/dyn
   -sah, --sahtml                Save HTML file
 ```
 
+#### *Requirment:*
+> 1. urllib3
+> 2. bs4(BeautifulSoup)
+> 3. certifi
+
 #### *ToDo:*
 > * Scheduler download
 > * Store date to Database
