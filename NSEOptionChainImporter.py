@@ -99,7 +99,7 @@ class Program:
         extensions = [x.strip() for x in re.split(';|,| ', outputType)]
 
         for ext in extensions:
-            if((ext != "db" ) or(ext != "database")):
+            if((ext != "db" ) and (ext != "database")):
                 desitnationFileName = "{0}{1}{2}.{3}".format(
                     destinationDirectory, self.fileNamePrefix, self.Date.strftime("%d-%m"), ext)
                 self.WriteToFile(desitnationFileName,
@@ -207,7 +207,7 @@ class Program:
         fl.close()
 
     def WriteToDB(self, lstColmn, lstRows):
-        dbp = databaseprovider(self.connectionString, (lstColmn, lstRows))
+        dbp = databaseprovider((lstColmn, lstRows))
         isTableCreated = dbp.CreateTable("option_chain")
 
     """ Fill all data"""
@@ -227,6 +227,6 @@ class Program:
         _datas = dateSpan2[0].find("b").text.split()
         self.Symbol = _datas[0]
         self.SpotPrice = _datas[1]
-
+        _optionDate = _optionDate.replace("\\n","")
         self.Date = dateutil.parser.parse(_optionDate)
         return self.Date
