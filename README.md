@@ -5,7 +5,7 @@ Used to import the data from [Option Chain](https://nseindia.com/live_market/dyn
 #### *Parameters:*
 ``` 
   -s, --symbol                  NSE Symbol
-  -f, --format                  CSV/JSON/BOTH format, 'BOTH' will generate csv and json files
+  -f, --format                  CSV/JSON/DB format, all option can be used using comma separator
   -p, --fileNamePrefix          File name prefix
   -sd, --sourcedirectory        Source Directory path (in home dir)
   -dd , --destinationdirectory  Destination Directory path (in home dir)
