@@ -40,9 +40,8 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--online", dest="onlineData", action="store_true",  default=False,
                         help="Get data from NSE portal when set to 'True', else get data from the html store local using -sd")
     parser.add_argument("-sah", "--sahtml", dest="saveAsHtml",
-                        action="store_true", default=True, help="Save HTML file")
+                        action="store_true", default=False, help="Save HTML file")
 
-    # parser.add_argument('-s', action='store', dest='symbol' , default="nifty", help='NSE Symbol')
     args = parser.parse_args()
     fnp = ''
     if(args.fileNamePrefix == ''):

@@ -1,0 +1,2 @@
+insert into OptionChain (symbol, dateof,spot_price, callput, strick_price, ask_price, ask_qty, bid_price, bid_qty,chngin_oi, iv, ltp, net_chng,oi, volume) values
+ (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)

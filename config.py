@@ -9,11 +9,14 @@ class AppConfig:
     def ConnectionString(self):
         return self.config["config"]["connectionstring"]
 
-   
     def OptionChianUrlFormat(self):
         return self.config["config"]["optionchianurlformat"]
-    
-   
+
     def TableName(self):
         return self.config["config"]["tablename"]
 
+    def ScriptCreateOptionChainTable(self):
+        return self.config["config"]["scriptcreateoptionchaintable"]
+
+    def ScriptInsertOptionChain(self):
+        return self.config["config"]["scriptinsertoptionchain"]

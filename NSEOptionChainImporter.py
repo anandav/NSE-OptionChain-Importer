@@ -99,7 +99,7 @@ class Program:
         extensions = [x.strip() for x in re.split(';|,| ', outputType)]
 
         for ext in extensions:
-            if((ext != "db" ) and (ext != "database")):
+            if((ext != "db") and (ext != "database")):
                 desitnationFileName = "{0}{1}{2}.{3}".format(
                     destinationDirectory, self.fileNamePrefix, self.Date.strftime("%d-%m"), ext)
                 self.WriteToFile(desitnationFileName,
@@ -107,7 +107,6 @@ class Program:
 
         if(("db" in extensions) or ("database" in extensions)):
             self.WriteToDB(tupleResult[0], tupleResult[1])
-
 
     """ Read Option Chain HTML file """
 
@@ -167,7 +166,7 @@ class Program:
         print("writing:{0}".format(filePath))
         fl = open(filePath, "w")
         if ((lstColmn != None) and (lstRows != None) and (html == None)):
-            if ((outputType == "csv")):
+            if (outputType == "csv"):
                 for x in range(0, len(lstColmn)):
                     fl.write(lstColmn[x])
                     if (x < len(lstColmn) - 1):
@@ -186,29 +185,33 @@ class Program:
                                 fl.write(",")
                             else:
                                 fl.write("\n")
-            if ((outputType == "json")):
-                jsonObject = {"Symbol": self.Symbol, "Date": self.Date.strftime("%d-%m-%Y"),
-                              "SpotPrice": self.SpotPrice, "OptionChain": []}
-                jsonArray = []
-                for row in lstRows:
-                    if(sum(row) > 0):
-                        calls = dict(zip(lstColmn[0:10], row[0:10]))
-                        puts = dict(zip(lstColmn[11:], row[11:]))
-
-                        customJson = dict(
-                            {"StrickPrice": row[10],  "Calls": calls, "Puts": puts})
-                        jsonArray.append(customJson)
-                jsonObject["OptionChain"] = jsonArray
-                json.dump(jsonObject, fl)
+            if (outputType == "json"):
+                json.dump(self.MakeDataObject(lstColmn, lstRows), fl)
         elif (html != None):
             fl.write(html)
         else:
             fl.write("Nothing to write")
         fl.close()
 
+    def MakeDataObject(self, lstColmn, lstRows):
+        jsonObject = {"Symbol": self.Symbol, "Date": self.Date.strftime("%d-%m-%Y"),
+                      "SpotPrice": self.SpotPrice, "OptionChain": []}
+        jsonArray = []
+        for row in lstRows:
+            if(sum(row) > 0):
+                calls = dict(zip(lstColmn[0:10], row[0:10]))
+                puts = dict(zip(lstColmn[11:], row[11:]))
+
+                customJson = dict(
+                    {"StrickPrice": row[10],  "Calls": calls, "Puts": puts})
+                jsonArray.append(customJson)
+            jsonObject["OptionChain"] = jsonArray
+        return jsonObject
+
     def WriteToDB(self, lstColmn, lstRows):
-        dbp = databaseprovider((lstColmn, lstRows))
-        isTableCreated = dbp.CreateTable("option_chain")
+        dbp = databaseprovider(self.MakeDataObject(lstColmn, lstRows))
+        isTableCreated = dbp.CreateOptionChainTable("option_chain")
+        dbp.SaveOptionChainData()
 
     """ Fill all data"""
 
@@ -227,6 +230,6 @@ class Program:
         _datas = dateSpan2[0].find("b").text.split()
         self.Symbol = _datas[0]
         self.SpotPrice = _datas[1]
-        _optionDate = _optionDate.replace("\\n","")
+        _optionDate = _optionDate.replace("\\n", "")
         self.Date = dateutil.parser.parse(_optionDate)
         return self.Date

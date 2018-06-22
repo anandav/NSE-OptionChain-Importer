@@ -20,8 +20,8 @@
                 "-s", "JindalStel",
                 "-f", "db",//"json,csv",
                 "-p","Optionchain ",
-                "-sd", "/home/aditi/Documents/May/",
-                "-dd","/home/aditi/Documents/May/",
+                "-sd", "/home/aditi/Documents/June/",
+                "-dd","/home/aditi/Documents/June/",
                 // "-sah", ""
             ],
             "program": "${workspaceFolder}/Program.py"
