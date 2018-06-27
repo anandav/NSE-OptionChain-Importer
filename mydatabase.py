@@ -11,7 +11,7 @@ class databaseprovider:
         # self.config = configparser.ConfigParser()
         # self.config.read("config.ini")
 
-    def GetConnetion(self):
+    def GetConnection(self):
         conn = sqlite3.connect(AppConfig().ConnectionString())
         return conn
 
@@ -20,21 +20,27 @@ class databaseprovider:
         tblcontent = fl.read()
         tblname = AppConfig().TableName()
         tblcontent = tblcontent.replace("TABLENAME", tblname)
-        conn = self.GetConnetion()
+        conn = self.GetConnection()
         conn.execute(tblcontent)
         conn.close()
 
     def SaveOptionChainData(self):
+       
         data = self.PrepareData()
-        conn = self.GetConnetion()
+        conn = self.GetConnection()
         fl = open(AppConfig().ScriptInsertOptionChain(), "r")
         tbl = fl.read()
         fl.close()
         if(len(data) > 0):
+            print("Writing to database")
             conn.executemany(tbl, data)
-        conn.commit()
+            conn.commit()
         conn.close()    
-      
+     
+    def GetData(self, query):
+        conn = self.GetConnection()
+        
+        
 
     def PrepareData(self):
         result = []

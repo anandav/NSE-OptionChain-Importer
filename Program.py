@@ -37,7 +37,7 @@ if __name__ == "__main__":
                         action="store",  help="Source Directory path (in home dir)")
     parser.add_argument("-dd", "--destinationdirectory", dest="dd",
                         action="store",  help="Destination Directory path (in home dir)")
-    parser.add_argument("-o", "--online", dest="onlineData", action="store_true",  default=False,
+    parser.add_argument("-o", "--online", dest="onlineData", action="store_true",  default=True,
                         help="Get data from NSE portal when set to 'True', else get data from the html store local using -sd")
     parser.add_argument("-sah", "--sahtml", dest="saveAsHtml",
                         action="store_true", default=False, help="Save HTML file")

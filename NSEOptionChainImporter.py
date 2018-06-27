@@ -1,6 +1,5 @@
 """NSE Option Chain importer to CSV, JSON"""
 
-
 import json
 import os
 import pickle
@@ -99,14 +98,13 @@ class Program:
         extensions = [x.strip() for x in re.split(';|,| ', outputType)]
 
         for ext in extensions:
-            if((ext != "db") and (ext != "database")):
+            if((ext == "db") or (ext == "database")):
+                self.WriteToDB(tupleResult[0], tupleResult[1])
+            elif((ext != "db") and (ext != "database")):
                 desitnationFileName = "{0}{1}{2}.{3}".format(
                     destinationDirectory, self.fileNamePrefix, self.Date.strftime("%d-%m"), ext)
                 self.WriteToFile(desitnationFileName,
                                  tupleResult[0], tupleResult[1], ext)
-
-        if(("db" in extensions) or ("database" in extensions)):
-            self.WriteToDB(tupleResult[0], tupleResult[1])
 
     """ Read Option Chain HTML file """
 
@@ -212,6 +210,7 @@ class Program:
         dbp = databaseprovider(self.MakeDataObject(lstColmn, lstRows))
         isTableCreated = dbp.CreateOptionChainTable("option_chain")
         dbp.SaveOptionChainData()
+
 
     """ Fill all data"""
 

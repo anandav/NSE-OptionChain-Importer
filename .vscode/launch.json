@@ -18,7 +18,7 @@
             "request": "launch",
             "args": [
                 "-s", "JindalStel",
-                "-f", "db",//"json,csv",
+                "-f", "json,csv,db",
                 "-p","Optionchain ",
                 "-sd", "/home/aditi/Documents/June/",
                 "-dd","/home/aditi/Documents/June/",
