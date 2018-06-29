@@ -56,9 +56,9 @@ if __name__ == "__main__":
             args.dd = "c:\\temp\\"
     else:
         if (args.sd == None):
-            args.sd = os.path.expanduser('~')+"/Documents/June/"
+            args.sd = os.path.expanduser('~')+"/Documents/July/"
         if(args.dd == None):
-            args.dd = os.path.expanduser('~')+"/Documents/June/"
+            args.dd = os.path.expanduser('~')+"/Documents/July/"
 
     clearScreen()
 
