@@ -72,7 +72,7 @@ class Program:
         http = urllib3.PoolManager()
         httpResponce = http.request("GET", baseUrl)
         if (httpResponce.status == 200):
-            print("page downloeded")
+            print("page downloaded")
 
             soup = BeautifulSoup(httpResponce.data, "html.parser")
             self.PopulateData(soup)
@@ -87,12 +87,12 @@ class Program:
                                           outputType):
 
         tupleResult = self.ReadTable(soup)
-        desitnationFileName = desitnationFileName = "{0}{1}{2}.{3}".format(
+        destinationFileName = destinationFileName = "{0}{1}{2}.{3}".format(
             destinationDirectory, self.fileNamePrefix, self.Date.strftime("%d-%m"), outputType)
         if(self.saveAsHtml):
-            desitnationHTMLFileName = desitnationFileName = "{0}{1}{2}.html".format(
+            destinationHTMLFileName = destinationFileName = "{0}{1}{2}.html".format(
                 destinationDirectory, self.fileNamePrefix, self.Date.strftime("%d-%m"))
-            self.WriteToFile(destinationDirectory, desitnationHTMLFileName, html=soup.prettify(),
+            self.WriteToFile(destinationDirectory, destinationHTMLFileName, html=soup.prettify(),
                              lstColmn=None, lstRows=None, outputType=None)
 
         extensions = [x.strip() for x in re.split(';|,| ', outputType)]
@@ -101,9 +101,9 @@ class Program:
             if((ext == "db") or (ext == "database")):
                 self.WriteToDB(tupleResult[0], tupleResult[1])
             elif((ext != "db") and (ext != "database")):
-                desitnationFileName = "{0}{1}{2}.{3}".format(
+                destinationFileName = "{0}{1}{2}.{3}".format(
                     destinationDirectory, self.fileNamePrefix, self.Date.strftime("%d-%m"), ext)
-                self.WriteToFile(destinationDirectory, desitnationFileName,
+                self.WriteToFile(destinationDirectory, destinationFileName,
                                  tupleResult[0], tupleResult[1], ext)
 
     """ Read Option Chain HTML file """
@@ -167,7 +167,7 @@ class Program:
             os.makedirs(destinationDirectory)
 
         print("writing:{0}".format(filePath))
-        fl=open(filePath, "w")
+        fl = open(filePath, "w")
         if ((lstColmn != None) and (lstRows != None) and (html == None)):
             if (outputType == "csv"):
                 for x in range(0, len(lstColmn)):
@@ -178,9 +178,9 @@ class Program:
                         fl.write("\n")
 
                 for y in range(0, len(lstRows)):
-                    rowdata=lstRows[y]
+                    rowdata = lstRows[y]
                     if (sum(rowdata) > 0):
-                        rowdatalen=len(rowdata)
+                        rowdatalen = len(rowdata)
                         for z in range(0, rowdatalen):
                             fl.write(str(rowdata[z]))
 
@@ -197,43 +197,42 @@ class Program:
         fl.close()
 
     def MakeDataObject(self, lstColmn, lstRows):
-        jsonObject={"Symbol": self.Symbol, "Date": self.Date.strftime("%d-%m-%Y"),
+        jsonObject = {"Symbol": self.Symbol, "Date": self.Date.strftime("%d-%m-%Y"),
                       "SpotPrice": self.SpotPrice, "OptionChain": []}
-        jsonArray=[]
+        jsonArray = []
         for row in lstRows:
             if(sum(row) > 0):
-                calls=dict(zip(lstColmn[0:10], row[0:10]))
-                puts=dict(zip(lstColmn[11:], row[11:]))
+                calls = dict(zip(lstColmn[0:10], row[0:10]))
+                puts = dict(zip(lstColmn[11:], row[11:]))
 
-                customJson=dict(
-                    {"StrickPrice": row[10],  "Calls": calls, "Puts": puts})
+                customJson = dict(
+                    {"StrikePrice": row[10],  "Calls": calls, "Puts": puts})
                 jsonArray.append(customJson)
-            jsonObject["OptionChain"]=jsonArray
+            jsonObject["OptionChain"] = jsonArray
         return jsonObject
 
     def WriteToDB(self, lstColmn, lstRows):
-        dbp=databaseprovider(self.MakeDataObject(lstColmn, lstRows))
-        isTableCreated=dbp.CreateOptionChainTable("option_chain")
+        dbp = databaseprovider(self.MakeDataObject(lstColmn, lstRows))
+        isTableCreated = dbp.CreateOptionChainTable("option_chain")
         dbp.SaveOptionChainData()
-
 
     """ Fill all data"""
 
     def PopulateData(self, soup):
-        dateSpan=soup.find("p", {"class": "notification"})
-        dateSpan2=soup.select(".content_big #wrapper_btm table span")
-        _optionDate=None
+        dateSpan = soup.find("p", {"class": "notification"})
+        dateSpan2 = soup.select(".content_big #wrapper_btm table span")
+        _optionDate = None
         if (dateSpan != None):
-            dateSpan=dateSpan.find("span")
-            _optionDate=dateSpan.text.replace("Normal Market has Closed.",
+            dateSpan = dateSpan.find("span")
+            _optionDate = dateSpan.text.replace("Normal Market has Closed.",
                                                 "").strip()
         else:
-            _optionDate=dateSpan2[1].get_text(strip=True).replace(
+            _optionDate = dateSpan2[1].get_text(strip=True).replace(
                 "As on ", "").replace(" IST", "")
 
-        _datas=dateSpan2[0].find("b").text.split()
-        self.Symbol=_datas[0]
-        self.SpotPrice=_datas[1]
-        _optionDate=_optionDate.replace("\\n", "")
-        self.Date=dateutil.parser.parse(_optionDate)
+        _datas = dateSpan2[0].find("b").text.split()
+        self.Symbol = _datas[0]
+        self.SpotPrice = _datas[1]
+        _optionDate = _optionDate.replace("\\n", "")
+        self.Date = dateutil.parser.parse(_optionDate)
         return self.Date

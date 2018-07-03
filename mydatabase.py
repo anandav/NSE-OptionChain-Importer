@@ -45,9 +45,9 @@ class databaseprovider:
     def PrepareData(self):
         result = []
         for item in self.data["OptionChain"]:
-            result.append((self.data["Symbol"], self.data["Date"], self.data["SpotPrice"], 'call', item["StrickPrice"], item["Calls"]["AskPrice"], item["Calls"]["AskQty"], item["Calls"]
+            result.append((self.data["Symbol"], self.data["Date"], self.data["SpotPrice"], 'call', item["StrikePrice"], item["Calls"]["AskPrice"], item["Calls"]["AskQty"], item["Calls"]
                            ["BidPrice"], item["Calls"]["BidQty"], item["Calls"]["Chng in OI"], item["Calls"]["IV"], item["Calls"]["LTP"], item["Calls"]["Net Chng"], item["Calls"]["OI"], item["Calls"]["Volume"]))
-            result.append((self.data["Symbol"], self.data["Date"], self.data["SpotPrice"], 'put', item["StrickPrice"], item["Puts"]["AskPrice"], item["Puts"]["AskQty"],
+            result.append((self.data["Symbol"], self.data["Date"], self.data["SpotPrice"], 'put', item["StrikePrice"], item["Puts"]["AskPrice"], item["Puts"]["AskQty"],
                            item["Puts"]["BidPrice"], item["Puts"]["BidQty"], item["Puts"]["Chng in OI"], item["Puts"]["IV"], item["Puts"]["LTP"], item["Puts"]["Net Chng"], item["Puts"]["OI"], item["Puts"]["Volume"]))
 
         return result
